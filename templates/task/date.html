@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load task_extras %}
+{% block title %}tasks for {{ date.date|date:"F j, Y"|lower }}{% endblock %}
+{% block body %}
+  <div class="container">
+    <br>
+    <h4 class="text-center">
+      {{ page_obj.paginator.count }}
+      task{% if page_obj.paginator.count != 1 %}s{% endif %} found for
+      {{ date.date|date:"F j, Y"|lower }}
+    </h4>
+    <hr>
+    <div class="row">
+      <div class="col-sm-12 col-md-6 offset-md-3">
+        <div class="list-group">
+          {% for task in tasks %}
+            <div style="cursor: pointer"
+                 class="list-group-item list-group-item-action list-group-item-{{ task | severity_color_class }}
+                       d-flex justify-content-between align-items-start" onclick="toggleTask({{ task.pk }})">
+              <div class="ms-2 me-auto">
+                {% if task.completed %}
+                  <span style="text-decoration: line-through;">
+                    {{ task.content }}
+                  </span>
+                {% else %}
+                  {{ task.content }}
+                {% endif %}
+              </div>
+              {% if task.completed %}
+                <span class="badge rounded-pill bg-success">Completed</span>
+              {% else %}
+                <span class="badge rounded-pill bg-danger">Incomplete</span>
+              {% endif %}
+            </div>
+          {% empty %}
+            <div class="alert alert-danger">
+              no tasks found. perhaps <a href="{% url 'task:create' %}" class="alert-link">add one for today?</a>?
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <br>
+
+    {% if is_paginated %}
+      <nav aria-label="bottom pagination">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">&laquo;</span>
+            </li>
+          {% endif %}
+          {% for page in paginator.page_range %}
+            {% if page == page_obj.number %}
+              <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ page }}</span>
+              </li>
+            {% else %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">&raquo;</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+
+  </div>
+{% endblock %}
+{% block javascript %}
+  <script>
+    const toggleTask = function (pk) {
+      document.location.href = `/toggle/${pk}/?next={{ date.get_absolute_url }}`
+    }
+  </script>
+{% endblock %}

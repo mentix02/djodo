@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load task_extras %}
+{% block list_active %}active{% endblock %}
+{% block body %}
+  {% if not messages %}<br>{% endif %}
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12 col-md-6 offset-md-3">
+        {% for date in dates %}
+          <div class="card">
+            <div class="card-header">
+              <a href="{{ date.get_absolute_url }}">{{ date.date|date:"F j, Y" }}</a>
+            </div>
+            <ul class="list-group list-group-flush">
+              {% for task in date.tasks.all|slice:"5" %}
+                <li style="cursor: pointer"
+                    class="list-group-item list-group-item-action list-group-item-{{ task | severity_color_class }}
+                       d-flex justify-content-between align-items-start" onclick="toggleTask({{ task.pk }})">
+                  <div class="ms-2 me-auto">
+                    {% if task.completed %}
+                      <span style="text-decoration: line-through;">
+                    {{ task.content }}
+                  </span>
+                    {% else %}
+                      {{ task.content }}
+                    {% endif %}
+                  </div>
+                  {% if task.completed %}
+                    <span class="badge rounded-pill bg-success">Completed</span>
+                  {% else %}
+                    <span class="badge rounded-pill bg-danger">Incomplete</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+              {% with date.tasks.count as date_count %}
+                {% if date_count > 5 %}
+                  <div
+                      style="cursor: pointer" onclick='redirectToDate("{{ date.date|date:"Y-m-d"|lower }}")'
+                      class="list-group-item list-group-item-action list-group-item-light d-flex justify-content-between
+                             align-items-start">
+                    <div class="ms-2 me-auto">
+                      view all {{ date_count }} tasks
+                    </div>
+                  </div>
+                {% endif %}
+              {% endwith %}
+            </ul>
+          </div>
+          <br>
+        {% empty %}
+          <div class="card">
+            <div class="card-header">
+              no tasks to display. click <a href="{% url 'task:create' %}">here</a> to add a one.
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block javascript %}
+  <script>
+    const toggleTask = function (pk) {
+      document.location.href = `/toggle/${pk}/`;
+    }
+    const redirectToDate = function (date) {
+      document.location.href = `/date/${date}/`;
+    }
+  </script>
+{% endblock %}

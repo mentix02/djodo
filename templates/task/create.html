@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}add task{% endblock %}
+{% block create_active %}active{% endblock %}
+{% block body %}
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12 col-md-4 offset-md-4">
+
+        <h2 class="text-center mt-3">{{ title }}</h2>
+
+        <hr>
+
+        <form method="post" enctype="multipart/form-data" action="{% url 'task:create' %}">
+          {% csrf_token %}
+
+          <div class="form-floating mb-3">
+            <textarea class="form-control" style="height: 150px"
+                      name="content" id="content" placeholder="Feed the dog...">{{ task.content }}</textarea>
+            <label for="content">content</label>
+          </div>
+
+          <div class="form-floating mb-3">
+            <select type="number" class="form-select" id="severity" name="severity">
+              {% for value, name in severity_choices %}
+                <option value="{{ value }}" {% if task.severity == value %}selected{% endif %}>{{ name }}</option>
+              {% endfor %}
+            </select>
+            <label for="severity">task severity</label>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-primary" type="submit">submit</button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+{% endblock %}{

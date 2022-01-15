@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="author" content="mentix02">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>{% block title %}djodo{% endblock %}</title>
+
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+
+  {% block head %}
+
+  {% endblock %}
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'task:index' %}">Djodo</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbar">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link {% block list_active %}{% endblock %}" href="{% url 'task:index' %}">home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% block create_active %}{% endblock %}" href="{% url 'task:create' %}">create</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="modal" data-bs-target="#deleteTasksModal" href="#">
+            delete completed
+          </a>
+        </li>
+      </ul>
+      <form id="date-form" class="d-flex">
+        <div class="input-group">
+          <input type="date" class="form-control">
+          <button type="submit" class="btn btn-primary">search</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</nav>
+
+<div class="modal fade" id="deleteTasksModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">delete completed tasks?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        this action is irreversible
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">cancel</button>
+        <form method="post" action="{% url 'task:delete-completed' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <button type="submit" class="btn btn-outline-danger">confirm</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if messages %}
+  <div class="container">
+    <br>
+    <div class="row">
+      {% for message in messages %}
+        <div class="col-sm-12 col-md-6 offset-md-3">
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+{% block body %}
+
+{% endblock %}
+
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script>
+
+  const dateInput = document.querySelector("input");
+  const dateForm = document.getElementById("date-form");
+
+  const urlParts = window.location.pathname.split("/");
+  const possibleDate = urlParts.pop() || urlParts.pop();
+
+  if (possibleDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    dateInput.value = possibleDate;
+  }
+
+  dateForm.onsubmit = function (e) {
+    e.preventDefault();
+    const date = dateInput.value;
+    window.location.href = `/date/${date}`;
+  }
+
+</script>
+{% block javascript %}
+
+{% endblock %}
+</body>
+</html>
