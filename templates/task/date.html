@@ -27,14 +27,14 @@
                 {% endif %}
               </div>
               {% if task.completed %}
-                <span class="badge rounded-pill bg-success">Completed</span>
+                <span class="badge rounded-pill bg-success">completed</span>
               {% else %}
-                <span class="badge rounded-pill bg-danger">Incomplete</span>
+                <span class="badge rounded-pill bg-danger">pending</span>
               {% endif %}
             </div>
           {% empty %}
             <div class="alert alert-danger">
-              no tasks found. perhaps <a href="{% url 'task:create' %}" class="alert-link">add one for today?</a>?
+              no tasks found. perhaps <a href="{% url 'task:create' %}" class="alert-link">add one for today</a>?
             </div>
           {% endfor %}
         </div>

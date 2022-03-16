@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from django.contrib import messages
 from django.urls import reverse_lazy
+from django.shortcuts import redirect, get_object_or_404
+from django.http import HttpRequest, HttpResponseRedirect
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.views.generic import View, ListView, CreateView, UpdateView
 
 from task.models import Task, Date
@@ -23,8 +25,15 @@ class DateTaskListView(ListView):
     template_name = 'task/date.html'
 
     def get_queryset(self):
-        self.date = get_object_or_404(Date, date=self.kwargs['date'])
-        return Task.objects.filter(date=self.date)
+        try:
+            self.date = Date.objects.get(date=self.kwargs['date'])
+        except Date.DoesNotExist:
+            self.date = {'date': self.kwargs['date']}
+
+        if isinstance(self.date, Date):
+            return self.date.tasks.all()
+        else:
+            return Task.objects.none()
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -45,7 +54,7 @@ class DeleteCompletedTaskView(View):
     @staticmethod
     def post(request: HttpRequest) -> HttpResponseRedirect:
 
-        to_redirect = request.POST.get('next', 'task:index')
+        redirect_to = request.POST.get('next', 'task:index')
 
         tasks = Task.objects.filter(completed=True)
         delete_count, _ = tasks.delete()
@@ -55,18 +64,21 @@ class DeleteCompletedTaskView(View):
         else:
             messages.success(request, f'{delete_count} tasks deleted successfully')
 
-        return redirect(to_redirect)
+        return redirect(redirect_to)
 
 
 class ToggleTaskView(View):
     @staticmethod
     def get(request: HttpRequest, pk: int) -> HttpResponseRedirect:
+
+        redirect_to = request.GET.get('next', 'task:index')
+
         task = get_object_or_404(Task, pk=pk)
         task.toggle_completed()
+
         completed = 'completed' if task.completed else 'pending'
         messages.info(request, f'task #{pk} marked {completed}.')
 
-        redirect_to = request.GET.get('next', 'task:index')
         return redirect(redirect_to)
 
 

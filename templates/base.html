@@ -9,6 +9,7 @@
   <title>{% block title %}djodo{% endblock %}</title>
 
   <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
   {% block head %}
 
@@ -30,15 +31,28 @@
         <li class="nav-item">
           <a class="nav-link {% block create_active %}{% endblock %}" href="{% url 'task:create' %}">create</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" data-bs-toggle="modal" data-bs-target="#deleteTasksModal" href="#">
-            delete completed
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            actions
           </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deleteCompletedModal" href="#">
+                delete completed
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#markTasksComplete" href="#">
+                mark all tasks complete
+              </a>
+            </li>
+          </ul>
         </li>
       </ul>
       <form id="date-form" class="d-flex">
+        {% csrf_token %}
         <div class="input-group">
-          <input type="date" class="form-control">
+          <input id="date" type="date" class="form-control">
           <button type="submit" class="btn btn-primary">search</button>
         </div>
       </form>
@@ -46,27 +60,7 @@
   </div>
 </nav>
 
-<div class="modal fade" id="deleteTasksModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">delete completed tasks?</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        this action is irreversible
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">cancel</button>
-        <form method="post" action="{% url 'task:delete-completed' %}">
-          {% csrf_token %}
-          <input type="hidden" name="next" value="{{ request.path }}">
-          <button type="submit" class="btn btn-outline-danger">confirm</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
+<div id="modals"></div>
 
 {% if messages %}
   <div class="container">
@@ -89,24 +83,28 @@
 {% endblock %}
 
 <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/base.js' %}"></script>
 <script>
+  const modalDiv = document.querySelector("#modals");
+  modalDiv.appendChild(
+    htmlToElement(
+      createModalTemplate(
+        "deleteCompletedModal",
+        "delete completed tasks?",
+        "{% url 'task:delete-completed' %}",
+        "{{ request.path }}", "danger")
+    )
+  );
 
-  const dateInput = document.querySelector("input");
-  const dateForm = document.getElementById("date-form");
-
-  const urlParts = window.location.pathname.split("/");
-  const possibleDate = urlParts.pop() || urlParts.pop();
-
-  if (possibleDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-    dateInput.value = possibleDate;
-  }
-
-  dateForm.onsubmit = function (e) {
-    e.preventDefault();
-    const date = dateInput.value;
-    window.location.href = `/date/${date}`;
-  }
-
+  {#modalDiv.appendChild(#}
+  {#  htmlToElement(#}
+  {#    createModalTemplate(#}
+  {#      "markTasksComplete",#}
+  {#      "mark all tasks complete?",#}
+  {#      "{% url 'task:mark-all-complete' %}",#}
+  {#      "", "success")#}
+  {#  )#}
+  {#);#}
 </script>
 {% block javascript %}
 

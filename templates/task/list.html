@@ -13,31 +13,29 @@
             </div>
             <ul class="list-group list-group-flush">
               {% for task in date.tasks.all|slice:"5" %}
-                <li style="cursor: pointer"
-                    class="list-group-item list-group-item-action list-group-item-{{ task | severity_color_class }}
-                       d-flex justify-content-between align-items-start" onclick="toggleTask({{ task.pk }})">
+                <li class="list-group-item list-group-item-action list-group-item-{{ task | severity_color_class }}
+                       d-flex justify-content-between align-items-start clickable" onclick="toggleTask({{ task.pk }})">
                   <div class="ms-2 me-auto">
                     {% if task.completed %}
-                      <span style="text-decoration: line-through;">
-                    {{ task.content }}
-                  </span>
+                      <span class="line-through">
+                        {{ task.content }}
+                      </span>
                     {% else %}
                       {{ task.content }}
                     {% endif %}
                   </div>
                   {% if task.completed %}
-                    <span class="badge rounded-pill bg-success">Completed</span>
+                    <span class="badge rounded-pill bg-success">completed</span>
                   {% else %}
-                    <span class="badge rounded-pill bg-danger">Incomplete</span>
+                    <span class="badge rounded-pill bg-danger">pending</span>
                   {% endif %}
                 </li>
               {% endfor %}
               {% with date.tasks.count as date_count %}
                 {% if date_count > 5 %}
-                  <div
-                      style="cursor: pointer" onclick='redirectToDate("{{ date.date|date:"Y-m-d"|lower }}")'
-                      class="list-group-item list-group-item-action list-group-item-light d-flex justify-content-between
-                             align-items-start">
+                  <div onclick='redirectToDate("{{ date.date|date:"Y-m-d"|lower }}")'
+                       class="list-group-item list-group-item-action list-group-item-light d-flex justify-content-between
+                             align-items-start clickable">
                     <div class="ms-2 me-auto">
                       view all {{ date_count }} tasks
                     </div>
